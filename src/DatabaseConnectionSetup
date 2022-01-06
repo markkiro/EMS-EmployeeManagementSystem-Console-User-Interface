@@ -1,0 +1,204 @@
+Database Scripts
+----------------
+//Please Add or Use System tables and add some data in the login_master;
+//user=USER/ ADMIN pass=1236/ 1234
+1. DDL
+---------
+
+CREATE USER empdb IDENTIFIED BY empdb;
+
+grant dba to empdb;
+
+CREATE  TABLE department 
+ (
+    department_id NUMBER(10) NOT NULL PRIMARY KEY,
+   department_nm VARCHAR2(25) NOT NULL 
+ );
+
+CREATE  TABLE compliance 
+ (  
+      complianceid  NUMBER(10)  NOT NULL PRIMARY KEY,
+      rlType   VARCHAR2(15)  DEFAULT (NULL),
+      details   VARCHAR(250)  DEFAULT (NULL),
+      createDate  DATE   DEFAULT (NULL),
+      department_id  NUMBER(10)  DEFAULT (NULL),     
+      CONSTRAINT FK_DEPART_ID
+      FOREIGN KEY (department_id)
+      REFERENCES department (department_id )
+ );
+
+
+CREATE  TABLE employees
+ ( 
+     empid  NUMBER(10)  NOT NULL PRIMARY KEY,
+     firstname  VARCHAR2(45)  DEFAULT (NULL),
+     lastname VARCHAR2(45)  DEFAULT (NULL),
+     dob   DATE   DEFAULT (NULL),
+     email   VARCHAR2(100)  DEFAULT (NULL),
+     department_id NUMBER(10)   DEFAULT (NULL),
+    CONSTRAINT FK_DEPARTMENT_ID
+    FOREIGN KEY (department_id)
+    REFERENCES department (department_id)
+ );
+
+CREATE  TABLE login_master
+  ( 
+     userid   NUMBER(10)  NOT NULL PRIMARY KEY,
+      password VARCHAR2(30)  NOT NULL,
+      role  VARCHAR2(20)  NOT NULL,  
+      CONSTRAINT  FK_EMPID
+      FOREIGN KEY (userid)
+      REFERENCES  employees(empid)
+ );
+
+
+CREATE  TABLE statusreport
+  ( 
+     complianceid  NUMBER(10)  NOT NULL ,
+      statusrptid   NUMBER(10)  NOT NULL PRIMARY KEY,
+      empid   NUMBER(10) NOT NULL,
+      comments   VARCHAR2(15)  DEFAULT (NULL),
+      createDate  DATE   DEFAULT (NULL),
+      department_id NUMBER(10)  DEFAULT (NULL),  
+      CONSTRAINT  statusreport_ibfk_1
+      FOREIGN KEY (department_id)
+      REFERENCES  department (department_id),
+      CONSTRAINT  statusreport_ibfk_2
+      FOREIGN KEY (empid)
+      REFERENCES  employees (empid),
+      CONSTRAINT  statusreport_ibfk_3
+      FOREIGN KEY (complianceid)
+     REFERENCES  compliance (complianceid)
+ );
+
+2. Sequence for auto increment
+-------------------------------
+
+CREATE  SEQUENCE department_seq 
+start with 100 
+increment by 1 
+nomaxvalue; 
+
+CREATE  SEQUENCE compliance_seq 
+start with 5000 
+increment by 1 
+nomaxvalue;
+
+CREATE  SEQUENCE employees_seq 
+start with 10000 
+increment by 1 
+nomaxvalue;
+
+CREATE  SEQUENCE statusreport_seq 
+start with 1 
+increment by 1 
+nomaxvalue; 
+
+
+
+
+Procedures and Functions
+-------------------------
+1	Stored Proc for adding Employee details into employees table
+ 	CREATE OR REPLACE PROCEDURE addEmp_sp
+ ( p_first_name  IN  VARCHAR2,
+   p_last_name  IN  VARCHAR2,
+   p_dob  IN  DATE,
+   p_email_id  IN  VARCHAR2,
+          p_dept_id IN NUMBER
+
+ ) 
+AS
+ BEGIN
+ 
+ INSERT INTO employees("EMPID", "FIRSTNAME", "LASTNAME", "DOB", "EMAIL","DEPARTMENT_ID") 
+   VALUES (employees_seq.NEXTVAL, p_first_name, p_last_name, p_dob, p_email_id, p_dept_id);
+
+ END addEmp_sp;
+/
+
+
+
+2	Trigger for adding data in to Login_Master table once after inserting the Employee details into employees table
+ 	CREATE OR REPLACE TRIGGER employees_after_insert
+AFTER INSERT
+   ON employees
+   FOR EACH ROW
+   
+DECLARE
+   v_first_name varchar2(10);
+   v_last_name  varchar2(10);
+   
+BEGIN
+   
+   INSERT INTO login_master
+   ( userid,
+     password,
+     role)
+   VALUES
+   ( :new.empid,'password','EMPLOYEE');
+     
+END;
+/
+
+
+3	Stored Proc for getting user details based on user ID
+ 	CREATE OR REPLACE PROCEDURE getUserDetails_sp
+ ( p_user_id  IN OUT NUMBER, 
+   p_password  OUT  VARCHAR2,
+   p_role OUT  VARCHAR2
+ ) 
+AS
+ BEGIN
+ 
+ SELECT userid,password,role 
+ INTO p_user_id, p_password, p_role 
+ FROM login_master where userid =p_user_id;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        p_user_id := NULL;
+        p_password := NULL;
+        p_role := NULL;
+
+ END getUserDetails_sp;
+/
+
+
+
+4	Function for getting all the rl details
+ 	CREATE OR REPLACE Function getAllRL_func  
+   RETURN SYS_REFCURSOR
+AS
+   RLCursor SYS_REFCURSOR; 
+  BEGIN
+   OPEN RLCursor FOR
+    SELECT  com.complianceid as complianceid, com.department_id, dept.department_nm,rlType,details,
+                    com.createDate, count(distinct emp.empid) AS empcount , 
+                    count(distinct sts.empid) as statuscount 
+ FROM department dept,employees emp,compliance com 
+ LEFT OUTER JOIN statusreport sts 
+ ON  sts.department_id = com.department_id  
+ AND sts.complianceid = com.complianceid 
+ WHERE com.department_id = emp.department_id
+ AND com.department_id = dept.department_id
+ GROUP BY com.complianceid,com.department_id,dept.department_nm,rlType,details,com.createDate;
+   RETURN RLCursor;
+END;
+/
+
+
+5	Stored Proc for getting Employee details
+ 	CREATE OR REPLACE PROCEDURE getAllEmp_sp
+ ( 
+  cursor_employees OUT SYS_REFCURSOR
+ ) 
+AS
+ BEGIN
+  OPEN cursor_employees FOR
+ SELECT  empid,firstname,lastname,dob,email,department_nm
+ FROM  employees emp 
+ LEFT OUTER JOIN  department depart 
+ ON emp.department_id = depart.department_id order by empid;
+ END getAllEmp_sp;
+/

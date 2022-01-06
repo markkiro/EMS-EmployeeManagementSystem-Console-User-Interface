@@ -1,0 +1,20 @@
+Jan 07, 2022 1:47:16 AM EMSystem editEmployee
+FINE: Exception Here: 
+RequiredField: 
+Fields Cannot be Empty.
+	at EMSystem.editEmployee(EMSystem.java:366)
+	at EMSystem.main(EMSystem.java:80)
+
+Jan 07, 2022 1:47:34 AM EMSystem addEmployee
+FINE: Exception Here: 
+RequiredField: 
+Fields Cannot be Empty.
+	at EMSystem.addEmployee(EMSystem.java:213)
+	at EMSystem.main(EMSystem.java:78)
+
+Jan 07, 2022 1:47:55 AM EMSystem searchEmployee
+FINE: Exception Here: 
+java.lang.NullPointerException: Cannot invoke "String.hashCode()" because "search" is null
+	at EMSystem.searchEmployee(EMSystem.java:714)
+	at EMSystem.main(EMSystem.java:84)
+
