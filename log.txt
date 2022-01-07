@@ -18,3 +18,20 @@ java.lang.NullPointerException: Cannot invoke "String.hashCode()" because "searc
 	at EMSystem.searchEmployee(EMSystem.java:714)
 	at EMSystem.main(EMSystem.java:84)
 
+Jan 07, 2022 5:57:46 AM EMSystem main
+FINE: Exception Here: 
+java.lang.NullPointerException: Cannot invoke "String.hashCode()" because "ch" is null
+	at EMSystem.main(EMSystem.java:35)
+
+Jan 07, 2022 3:57:01 PM EMSystem statusUser
+FINE: Exception Here: 
+java.lang.NullPointerException: Cannot invoke "String.hashCode()" because "rl" is null
+	at EMSystem.statusUser(EMSystem.java:1315)
+	at EMSystem.main(EMSystem.java:152)
+
+Jan 07, 2022 4:50:04 PM EMSystem statusUser
+FINE: Exception Here: 
+java.lang.NullPointerException: Cannot invoke "String.hashCode()" because "rl" is null
+	at EMSystem.statusUser(EMSystem.java:1315)
+	at EMSystem.main(EMSystem.java:152)
+

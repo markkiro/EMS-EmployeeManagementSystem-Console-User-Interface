@@ -34,6 +34,9 @@ public class EMSystem {
 
 				switch(ch) {
 				case "1":
+					System.out.println("\n+-------------------------------------+");
+					System.out.println("| Login Enter User Type And Password. |");
+					System.out.println("+-------------------------------------+");
 					System.out.print("\nEnter User: ");
 					String user=br.readLine();
 					System.out.print("Enter Password: ");
@@ -111,20 +114,7 @@ public class EMSystem {
 										System.out.println("\nLogged in as "+rs.getString(3));
 										System.out.println("Encrypted Password: "+encrypt_pass);
 										int myid=rs.getInt(1);
-										pst =con.prepareStatement("select * from employees where empid=?");
-										fmt= new Formatter();
-										pst.setInt(1, myid);
-										pst.executeQuery();
-										rs =pst.executeQuery();
-										System.out.println("\nYour Details:");
-										System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
-										System.out.format("|   %-10s|		%-16s   |	      %-16s   | %-12s |		  %-21s|  %-16s |\n", "EMP ID","FIRST NAME","LAST NAME","DATE OF BIRTH","EMAIL","DEPARTMENT NAME");
-										System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
-										if(rs.next()) {
-
-											System.out.format("|%-13d|%-28s|%-29s|%-15s|%-37s|%-19s|\n", rs.getInt(1),rs.getString(2),rs.getString(3),rs.getDate(4),rs.getString(5),rs.getInt(6));
-										}
-										System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
+										yourDetail(myid);
 
 										System.out.println("\n\n1. View Department. ");
 										System.out.println("2. Your Credentials.");
@@ -575,6 +565,12 @@ public class EMSystem {
 				}
 			}while(true);
 		}
+		catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
 		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value.");
 			logr.log(Level.FINE,"Exception Here: ",e);
@@ -663,6 +659,12 @@ public class EMSystem {
 				}
 
 			}while(true);
+		}
+		catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
 		}
 		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value."+e);
@@ -808,6 +810,12 @@ public class EMSystem {
 				}
 			}while(true);
 		}
+		catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
 		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value.");
 			logr.log(Level.FINE,"Exception Here: ",e);
@@ -901,6 +909,12 @@ public class EMSystem {
 				}
 			}while(true);
 
+		}
+		catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
 		}
 		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value.");
@@ -1043,7 +1057,13 @@ public class EMSystem {
 					break;
 				}
 			}while(true);
-		}catch(SQLException e) {
+		}catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
+		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value.");
 			logr.log(Level.FINE,"Exception Here: ",e);
 			System.out.println();
@@ -1174,7 +1194,8 @@ public class EMSystem {
 				System.out.println("+========================+");
 				System.out.println("\n1. Status Report.");
 				System.out.println("2. Create Report.");
-				System.out.println("3. Go Back.");
+				System.out.println("3. Update Report.");
+				System.out.println("4. Go Back.");
 				System.out.print("\nEnter Choice> ");
 				String rl=br.readLine();
 				switch(rl) {
@@ -1243,10 +1264,48 @@ public class EMSystem {
 					System.out.println("\nStatus Reported.");
 					break;
 				case "3":
+					pst=con.prepareStatement("update statusreport set complianceid=?, comments=? where empid=?");
+					System.out.println("\n+-----------------------+");
+					System.out.println("| Update Status Report. |");
+					System.out.println("+-----------------------+");
+					System.out.print("\nEnter Compliance ID: ");
+					String scompiance=br.readLine();
+					if(scompiance.matches("^$")) {
+						throw new RequiredField();
+					}
+					int compiance=Integer.parseInt(scompiance);
+					
+					System.out.print("Enter User ID: ");
+					String suid=br.readLine();
+					if(suid.matches("^$")) {
+						throw new RequiredField();
+					}
+					int uid=Integer.parseInt(suid);
+					System.out.print("Update Comment: ");
+					String comment1=br.readLine();
+					if(comment1.matches("^$")) {
+						throw new RequiredField();
+					}
+					
+					
+					
+					pst.setInt(1, compiance);
+					pst.setString(2, comment1);
+					pst.setInt(3, uid);
+					pst.executeUpdate();
+					rs =pst.executeQuery();
+					if(rs.next()) {
+						System.out.println("\nSuccessfully Updated Status Report.");	
+					}else{
+						System.out.println("\nInvalid Input Status Report Not Updated.");	
+					}
+					break;
+
+				case "4":
 					break;
 				default:System.out.println("\nInvalid Input Please Select The Correct Choice.");
 				}
-				if(rl.equals("3")) {
+				if(rl.equals("4")) {
 					break;
 				}
 			}while(true);
@@ -1305,7 +1364,8 @@ public class EMSystem {
 				System.out.println("+========================+");
 				System.out.println("\n1. Status Report.");
 				System.out.println("2. Create Report.");
-				System.out.println("3. Go Back.");
+				System.out.println("3. Update Report.");
+				System.out.println("4. Go Back.");
 				System.out.print("\nEnter Choice> ");
 				String rl=br.readLine();
 				switch(rl) {
@@ -1379,10 +1439,39 @@ public class EMSystem {
 					System.out.println("\nStatus Reported.");
 					break;
 				case "3":
+					pst=con.prepareStatement("update statusreport set complianceid=?, comments=? where empid=?");
+					System.out.println("\n+----------------------------+");
+					System.out.println("| Update Your Status Report. |");
+					System.out.println("+----------------------------+");
+					System.out.print("\nEnter Compliance ID: ");
+					String scompiance=br.readLine();
+					if(scompiance.matches("^$")) {
+						throw new RequiredField();
+					}
+					int compiance=Integer.parseInt(scompiance);
+					
+					System.out.print("Update Your Comment: ");
+					String comment1=br.readLine();
+					if(comment1.matches("^$")) {
+						throw new RequiredField();
+					}
+
+					pst.setInt(1, compiance);
+					pst.setString(2, comment1);
+					pst.setInt(3, i);
+					pst.executeUpdate();
+					rs =pst.executeQuery();
+					if(rs.next()) {
+						System.out.println("\nSuccessfully Updated Your Status Report.");	
+					}else{
+						System.out.println("\nInvalid Input Your Status Report Not Updated.");	
+					}
+					break;
+				case "4":
 					break;
 				default:System.out.println("\nInvalid Input Please Select The Correct Choice.");
 				}
-				if(rl.equals("3")) {
+				if(rl.equals("4")) {
 					break;
 				}
 			}while(true);
@@ -1426,7 +1515,64 @@ public class EMSystem {
 			System.out.println();
 		}
 	}
+	
+	static public void yourDetail(int i) {
+		try {
+			setupLogger();
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con =DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","system","oracle");
+			fmt= new Formatter();
+			PreparedStatement pst;
+			ResultSet rs;
+			pst =con.prepareStatement("select * from employees where empid=?");
+			fmt= new Formatter();
+			pst.setInt(1, i);
+			pst.executeQuery();
+			rs =pst.executeQuery();
+			System.out.println("\nYour Details:");
+			System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
+			System.out.format("|   %-10s|		%-16s   |	      %-16s   | %-12s |		  %-21s|  %-16s |\n", "EMP ID","FIRST NAME","LAST NAME","DATE OF BIRTH","EMAIL","DEPARTMENT NAME");
+			System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
+			if(rs.next()) {
 
+				System.out.format("|%-13d|%-28s|%-29s|%-15s|%-37s|%-19s|\n", rs.getInt(1),rs.getString(2),rs.getString(3),rs.getDate(4),rs.getString(5),rs.getInt(6));
+			}
+			System.out.println("+-------------+----------------------------+-----------------------------+---------------+-------------------------------------+-------------------+");
+		}catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
+		catch(SQLException e) {
+			System.out.println("\nInvalid Input Please Enter Correct Value.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}catch(InvalidEmailFormat e) {
+			System.out.println(e.getMessage());
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}catch(RequiredField e) {
+			System.out.println(e.getMessage());
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
+		catch(NumberFormatException e) {
+			System.out.println("\nInvalid Input Please Enter Number Value.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}catch(Exception e) {
+			System.out.println("\nInvalid Input Please Enter Correct Value.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
+	}
+	
 	static public void viewRLUser() {
 		try {
 			setupLogger();
@@ -1623,7 +1769,14 @@ public class EMSystem {
 					break;
 				}
 			}while(true);
-		}		catch(SQLException e) {
+		}
+		catch(SQLIntegrityConstraintViolationException e) {
+			System.out.println("\nWrong ID's Have Been Entered.");
+			logr.log(Level.FINE,"Exception Here: ",e);
+			System.out.println();
+			System.out.println();
+		}
+		catch(SQLException e) {
 			System.out.println("\nInvalid Input Please Enter Correct Value.");
 			logr.log(Level.FINE,"Exception Here: ",e);
 			System.out.println();
